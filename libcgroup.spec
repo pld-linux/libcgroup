@@ -1,3 +1,11 @@
+# TODO
+# - pldize initscripts
+# warning: Installed (but unpackaged) file(s) found:
+#   /bin/cgcreate
+#   /bin/cgset
+#   /sbin/cgclear
+#   /usr/share/man/man1/cgcreate.1.gz
+#   /usr/share/man/man1/cgset.1.gz
 Summary:	Tools and libraries to control and monitor control groups
 Name:		libcgroup
 Version:	0.34
@@ -14,6 +22,9 @@ Requires(post):	/sbin/ldconfig
 Requires(preun):	/sbin/chkconfig
 Requires:	rc-scripts
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+
+%define		_exec_prefix	/
+%define		_libdir			%{_prefix}/%{_lib}
 
 %description
 Control groups infrastructure. The tools and library help manipulate,
@@ -34,11 +45,7 @@ groups and provide scripts to manage that configuration.
 %setup -q
 
 %build
-%configure \
-	--bindir=/bin \
-	--sbindir=/sbin \
-	--libdir=/%{_lib} \
-
+%configure
 %{__make}
 
 %install
@@ -59,13 +66,12 @@ cp samples/cgrules.conf $RPM_BUILD_ROOT%{_sysconfdir}/cgrules.conf
 
 # sanitize pam module, we need only pam_cgroup.so in the right directory
 install -d $RPM_BUILD_ROOT/%{_lib}/security
-mv -f $RPM_BUILD_ROOT/%{_lib}/pam_cgroup.so.*.*.* $RPM_BUILD_ROOT/%{_lib}/security/pam_cgroup.so
-rm -f $RPM_BUILD_ROOT/%{_lib}/pam_cgroup*
+mv -f $RPM_BUILD_ROOT%{_libdir}/pam_cgroup.so.*.*.* $RPM_BUILD_ROOT/%{_lib}/security/pam_cgroup.so
+rm -f $RPM_BUILD_ROOT%{_libdir}/pam_cgroup*
 
-# move the devel stuff to %{_prefix}
-install -d $RPM_BUILD_ROOT%{_libdir}
-mv -f $RPM_BUILD_ROOT/%{_lib}/libcgroup.la $RPM_BUILD_ROOT%{_libdir}
-rm -f $RPM_BUILD_ROOT/%{_lib}/libcgroup.so
+# move library to /%{_lib}
+install -d $RPM_BUILD_ROOT/%{_lib}
+mv $RPM_BUILD_ROOT%{_libdir}/libcgroup.so.* $RPM_BUILD_ROOT/%{_lib}
 ln -snf ../../%{_lib}/$(basename $RPM_BUILD_ROOT/%{_lib}/libcgroup.so.*.*.*) $RPM_BUILD_ROOT%{_libdir}/libcgroup.so
 
 %clean
