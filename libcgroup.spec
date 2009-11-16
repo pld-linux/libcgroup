@@ -15,7 +15,9 @@ Group:		Development/Libraries
 Source0:	http://dl.sourceforge.net/libcg/%{name}-%{version}.tar.bz2
 # Source0-md5:	681c751d1a1ea78615094007d39db6cb
 URL:		http://libcg.sourceforge.net/
+BuildRequires:	bison
 BuildRequires:	flex
+BuildRequires:	libstdc++-devel
 BuildRequires:	pam-devel
 Requires(post):	/sbin/chkconfig
 Requires(post):	/sbin/ldconfig
