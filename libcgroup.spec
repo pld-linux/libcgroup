@@ -1,19 +1,13 @@
 # TODO
 # - pldize initscripts
-# warning: Installed (but unpackaged) file(s) found:
-#   /bin/cgcreate
-#   /bin/cgset
-#   /sbin/cgclear
-#   /usr/share/man/man1/cgcreate.1.gz
-#   /usr/share/man/man1/cgset.1.gz
 Summary:	Tools and libraries to control and monitor control groups
 Name:		libcgroup
-Version:	0.34
+Version:	0.36.1
 Release:	1
 License:	LGPL v2+
 Group:		Development/Libraries
-Source0:	http://dl.sourceforge.net/libcg/%{name}-%{version}.tar.bz2
-# Source0-md5:	681c751d1a1ea78615094007d39db6cb
+Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.tar.bz2
+# Source0-md5:	f8d842cdf9f80a64588870b706130191
 URL:		http://libcg.sourceforge.net/
 BuildRequires:	bison
 BuildRequires:	flex
@@ -100,16 +94,30 @@ fi
 %config(noreplace) %{_sysconfdir}/cgconfig.conf
 %config(noreplace) %{_sysconfdir}/cgrules.conf
 %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/cgred.conf
+
+%attr(755,root,root) /bin/cgclassify
+%attr(755,root,root) /bin/cgcreate
+%attr(755,root,root) /bin/cgdelete
+%attr(755,root,root) /bin/cgexec
+%attr(755,root,root) /bin/cgget
+%attr(755,root,root) /bin/cgset
+%attr(755,root,root) /bin/lscgroup
+%attr(755,root,root) /bin/lssubsys
+%attr(755,root,root) /sbin/cgclear
+%attr(755,root,root) /sbin/cgconfigparser
+%attr(755,root,root) /sbin/cgrulesengd
+
 %attr(754,root,root) /etc/rc.d/init.d/cgconfig
 %attr(754,root,root) /etc/rc.d/init.d/cgred
 %attr(755,root,root) /%{_lib}/libcgroup.so.*.*.*
-%attr(755,root,root) %ghost /%{_lib}/libcgroup.so.1
+%attr(755,root,root) %ghost /%{_lib}/libcgroup.so.?
 %attr(755,root,root) /%{_lib}/security/pam_cgroup.so
-%attr(755,root,root) /bin/cgexec
-%attr(755,root,root) /bin/cgclassify
-%attr(755,root,root) /sbin/cgconfigparser
-%attr(755,root,root) /sbin/cgrulesengd
+
 %{_mandir}/man1/cgclassify.1*
+%{_mandir}/man1/cgclear.1*
+%{_mandir}/man1/cgcreate.1*
+%{_mandir}/man1/cgget.1*
+%{_mandir}/man1/cgset.1*
 %{_mandir}/man1/cgexec.1*
 %{_mandir}/man5/cgconfig.conf.5*
 %{_mandir}/man5/cgred.conf.5*
@@ -120,6 +128,8 @@ fi
 %files devel
 %defattr(644,root,root,755)
 %doc INSTALL
-%{_includedir}/libcgroup.h
+%attr(755,root,root) %{_libdir}/libcgroup.so
 %{_libdir}/libcgroup.la
-%{_libdir}/libcgroup.so
+%{_includedir}/libcgroup.h
+%{_includedir}/libcgroup
+%{_pkgconfigdir}/libcgroup.pc
