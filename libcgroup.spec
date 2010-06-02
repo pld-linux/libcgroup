@@ -28,7 +28,7 @@ control, administrate and monitor control groups and the associated
 controllers.
 
 %package devel
-Summary:	Development libraries to develop applications that utilize control groups
+Summary:	Development libraries for %{name}
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 
@@ -36,6 +36,14 @@ Requires:	%{name} = %{version}-%{release}
 It provides API to create/delete and modify cgroup nodes. It will also
 in the future allow creation of persistent configuration for control
 groups and provide scripts to manage that configuration.
+
+%package pam
+Summary:	PAM module for %{name}
+Group:		Libraries
+Requires:	%{name} = %{version}-%{release}
+
+%description pam
+PAM module for %{name}.
 
 %prep
 %setup -q
@@ -111,7 +119,6 @@ fi
 %attr(754,root,root) /etc/rc.d/init.d/cgred
 %attr(755,root,root) /%{_lib}/libcgroup.so.*.*.*
 %attr(755,root,root) %ghost /%{_lib}/libcgroup.so.?
-%attr(755,root,root) /%{_lib}/security/pam_cgroup.so
 
 %{_mandir}/man1/cgclassify.1*
 %{_mandir}/man1/cgclear.1*
@@ -124,6 +131,10 @@ fi
 %{_mandir}/man5/cgrules.conf.5*
 %{_mandir}/man8/cgconfigparser.8*
 %{_mandir}/man8/cgrulesengd.8*
+
+%files pam
+%defattr(644,root,root,755)
+%attr(755,root,root) /%{_lib}/security/pam_cgroup.so
 
 %files devel
 %defattr(644,root,root,755)
