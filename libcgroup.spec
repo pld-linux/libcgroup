@@ -2,12 +2,12 @@
 # - pldize initscripts
 Summary:	Tools and libraries to control and monitor control groups
 Name:		libcgroup
-Version:	0.36.1
+Version:	0.37
 Release:	1
 License:	LGPL v2+
 Group:		Development/Libraries
 Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.tar.bz2
-# Source0-md5:	f8d842cdf9f80a64588870b706130191
+# Source0-md5:	beecca8770155afa62981076e96d4c9c
 URL:		http://libcg.sourceforge.net/
 BuildRequires:	bison
 BuildRequires:	flex
@@ -20,7 +20,7 @@ Requires:	rc-scripts
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_exec_prefix	/
-%define		_libdir			%{_prefix}/%{_lib}
+%define		_libdir		%{_prefix}/%{_lib}
 
 %description
 Control groups infrastructure. The tools and library help manipulate,
@@ -49,37 +49,35 @@ PAM module for %{name}.
 %setup -q
 
 %build
-%configure
+%configure \
+	--enable-initscript-install \
+	--enable-pam-module-dir=/%{_lib}/security
+
 %{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
+install -d $RPM_BUILD_ROOT/etc/sysconfig
+
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
-# install init scripts
-install -d $RPM_BUILD_ROOT/etc/rc.d/init.d
-cp scripts/init.d/cgconfig $RPM_BUILD_ROOT/etc/rc.d/init.d/cgconfig
-cp scripts/init.d/cgred $RPM_BUILD_ROOT/etc/rc.d/init.d/cgred
+cp -a samples/cgred.conf $RPM_BUILD_ROOT/etc/sysconfig/cgred.conf
+cp -a samples/cgconfig.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/cgconfig
+cp -a samples/cg{config,rules,snapshot_blacklist}.conf $RPM_BUILD_ROOT%{_sysconfdir}
 
-# install config files
-install -d $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
-cp samples/cgred.conf $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/cgred.conf
-cp samples/cgconfig.conf $RPM_BUILD_ROOT%{_sysconfdir}/cgconfig.conf
-cp samples/cgrules.conf $RPM_BUILD_ROOT%{_sysconfdir}/cgrules.conf
-
-# sanitize pam module, we need only pam_cgroup.so in the right directory
-install -d $RPM_BUILD_ROOT/%{_lib}/security
-mv -f $RPM_BUILD_ROOT%{_libdir}/pam_cgroup.so.*.*.* $RPM_BUILD_ROOT/%{_lib}/security/pam_cgroup.so
-rm -f $RPM_BUILD_ROOT%{_libdir}/pam_cgroup*
-
-# move library to /%{_lib}
-install -d $RPM_BUILD_ROOT/%{_lib}
+mv -f $RPM_BUILD_ROOT/%{_lib}/security/pam_cgroup.so{.*.*.*,}
 mv $RPM_BUILD_ROOT%{_libdir}/libcgroup.so.* $RPM_BUILD_ROOT/%{_lib}
 ln -snf ../../%{_lib}/$(basename $RPM_BUILD_ROOT/%{_lib}/libcgroup.so.*.*.*) $RPM_BUILD_ROOT%{_libdir}/libcgroup.so
 
+%{__rm} $RPM_BUILD_ROOT/%{_lib}/security/pam_cgroup.so.*
+%{__rm} $RPM_BUILD_ROOT{/%{_lib}/security,%{_libdir}}/*.la
+
 %clean
 rm -rf $RPM_BUILD_ROOT
+
+#%%pre
+#getent group cgred >/dev/null || groupadd cgred
 
 %post
 /sbin/ldconfig
@@ -98,39 +96,23 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc INSTALL README_daemon
-%config(noreplace) %{_sysconfdir}/cgconfig.conf
-%config(noreplace) %{_sysconfdir}/cgrules.conf
-%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/cgred.conf
+%doc README README_daemon
+%attr(754,root,root) /etc/rc.d/init.d/cg*
+%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/cg*
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/cg*.conf
 
-%attr(755,root,root) /bin/cgclassify
-%attr(755,root,root) /bin/cgcreate
-%attr(755,root,root) /bin/cgdelete
-%attr(755,root,root) /bin/cgexec
-%attr(755,root,root) /bin/cgget
-%attr(755,root,root) /bin/cgset
+%attr(755,root,root) /bin/cg*
 %attr(755,root,root) /bin/lscgroup
 %attr(755,root,root) /bin/lssubsys
-%attr(755,root,root) /sbin/cgclear
-%attr(755,root,root) /sbin/cgconfigparser
-%attr(755,root,root) /sbin/cgrulesengd
+%attr(755,root,root) /sbin/cg*
 
-%attr(754,root,root) /etc/rc.d/init.d/cgconfig
-%attr(754,root,root) /etc/rc.d/init.d/cgred
 %attr(755,root,root) /%{_lib}/libcgroup.so.*.*.*
 %attr(755,root,root) %ghost /%{_lib}/libcgroup.so.?
 
-%{_mandir}/man1/cgclassify.1*
-%{_mandir}/man1/cgclear.1*
-%{_mandir}/man1/cgcreate.1*
-%{_mandir}/man1/cgget.1*
-%{_mandir}/man1/cgset.1*
-%{_mandir}/man1/cgexec.1*
-%{_mandir}/man5/cgconfig.conf.5*
-%{_mandir}/man5/cgred.conf.5*
-%{_mandir}/man5/cgrules.conf.5*
-%{_mandir}/man8/cgconfigparser.8*
-%{_mandir}/man8/cgrulesengd.8*
+%{_mandir}/man1/ls*.1*
+%{_mandir}/man1/cg*.1*
+%{_mandir}/man5/cg*.5*
+%{_mandir}/man8/cg*.8*
 
 %files pam
 %defattr(644,root,root,755)
@@ -138,9 +120,7 @@ fi
 
 %files devel
 %defattr(644,root,root,755)
-%doc INSTALL
 %attr(755,root,root) %{_libdir}/libcgroup.so
-%{_libdir}/libcgroup.la
-%{_includedir}/libcgroup.h
 %{_includedir}/libcgroup
+%{_includedir}/libcgroup.h
 %{_pkgconfigdir}/libcgroup.pc
