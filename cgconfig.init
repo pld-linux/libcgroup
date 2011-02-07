@@ -14,13 +14,11 @@ CREATE_DEFAULT=yes
 [ -f /etc/sysconfig/cgconfig ] && . /etc/sysconfig/cgconfig
 
 create_default_groups() {
-	local defaultcgroup
-
-	 if [ -f /etc/cgrules.conf ]; then
+	if [ -f /etc/cgrules.conf ]; then
 		defaultcgroup=$(awk '/^\*[\t ]+/ { print $3; exit }' /etc/cgrules.conf)
 		if [ -n "$defaultcgroup" -a "$defaultcgroup" = "*" ]; then
-			log_warning_msg "/etc/cgrules.conf incorrect"
-			log_warning_msg "Overriding it"
+			nls "/etc/cgrules.conf incorrect"
+			nls "Overriding it"
 			defaultcgroup=
 		fi
 	fi
@@ -29,33 +27,33 @@ create_default_groups() {
 		defaultcgroup=sysdefault/
 	fi
 
-	 #
-	 # Find all mounted subsystems and create comma-separated list
-	 # of controllers.
-	 #
-	 controllers=`lssubsys 2>/dev/null | tr '\n' ',' | sed s/.$//`
+	#
+	# Find all mounted subsystems and create comma-separated list
+	# of controllers.
+	#
+	controllers=`lssubsys 2>/dev/null | tr '\n' ',' | sed s/.$//`
 
-	 #
-	 # Create the default group, ignore errors when the default group
-	 # already exists.
-	 #
-	 cgcreate -f 664 -d 775 -g $controllers:$defaultcgroup 2>/dev/null
+	#
+	# Create the default group, ignore errors when the default group
+	# already exists.
+	#
+	cgcreate -f 664 -d 775 -g $controllers:$defaultcgroup 2>/dev/null
 
-	 #
-	 # special rule for cpusets
-	 #
-	 if echo $controllers | grep -q -w cpuset; then
-		  cpus=`cgget -nv -r cpuset.cpus /`
-		  cgset -r cpuset.cpus=$cpus $defaultcgroup
-		  mems=`cgget -nv -r cpuset.mems /`
-		  cgset -r cpuset.mems=$mems $defaultcgroup
-	 fi
+	#
+	# special rule for cpusets
+	#
+	if echo $controllers | grep -q -w cpuset; then
+		cpus=`cgget -nv -r cpuset.cpus /`
+		cgset -r cpuset.cpus=$cpus $defaultcgroup
+		mems=`cgget -nv -r cpuset.mems /`
+		cgset -r cpuset.mems=$mems $defaultcgroup
+	fi
 
-	 #
-	 # Classify everything to default cgroup. Ignore errors, some processes
-	 # may exit after ps is run and before cgclassify moves them.
-	 #
-	 cgclassify -g $controllers:$defaultcgroup `ps --no-headers -eL o tid` 2>/dev/null || :
+	#
+	# Classify everything to default cgroup. Ignore errors, some processes
+	# may exit after ps is run and before cgclassify moves them.
+	#
+	cgclassify -g $controllers:$defaultcgroup `ps --no-headers -eL o tid` 2>/dev/null || :
 }
 
 start() {
@@ -67,27 +65,22 @@ start() {
 
 	msg_starting "cgconfig"
 	if [ ! -s /etc/cgconfig.conf ]; then
-		log_failure_msg "/etc/cgconfig.conf is not configured"
+		nls "/etc/cgconfig.conf is not configured"
 		return 6
 	fi
 
 	/sbin/cgconfigparser -l /etc/cgconfig.conf
 	retval=$?
 	if [ $retval -ne 0 ]; then
-		log_failure_msg "Failed to parse /etc/cgconfig.conf"
+		nls "Failed to parse /etc/cgconfig.conf"
 		return 1
 	fi
 
-	if [ $CREATE_DEFAULT = "yes" ]; then
+	if is_yes "$CREATE_DEFAULT"; then
 		create_default_groups
 	fi
-
-	touch /var/lock/subsys/cgconfig
 	retval=$?
-	if [ $retval -ne 0 ]; then
-		log_failure_msg "Failed to touch /var/lock/subsys/cgconfig"
-		return 1
-	fi
+	[ $retval -eq 0 ] && touch /var/lock/subsys/cgconfig
 	ok
 }
 

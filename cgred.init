@@ -18,15 +18,15 @@ start() {
 		return
 	fi
 
-	msg_staring "CGroup Rules Engine Daemon"
 	if [ ! -s /etc/cgrules.conf ]; then
-		log_failure_msg "not configured"
+		nls "CGroup Rules Engine Daemon not configured"
 		return 6
 	fi
 	if ! grep -qs "^cgroup" /proc/mounts ; then
-		log_failure_msg "Cannot find cgroups, is cgconfig service running?"
+		nls "Cannot find cgroups, is cgconfig service running?"
 		return 1
 	fi
+	msg_staring "CGroup Rules Engine Daemon"
 	# Read in configuration options.
 	OPTIONS=""
 	if [ -f "/etc/sysconfig/cgred.conf" ] ; then
