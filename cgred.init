@@ -29,7 +29,7 @@ start() {
 		return
 	fi
 
-	msg_staring "CGroup Rules Engine Daemon"
+	msg_starting "CGroup Rules Engine Daemon"
 	# Read in configuration options.
 	OPTIONS=""
 	if [ -f /etc/sysconfig/cgred.conf ]; then
@@ -41,7 +41,7 @@ start() {
 		[ -n "$SOCKET_GROUP" ] && OPTIONS="$OPTIONS -g $SOCKET_GROUP"
 	fi
 
-	daemon --check cgred --pidfile /var/run/cgred.pid /sbin/cgrulesengd $OPTIONS
+	daemon --pidfile /var/run/cgred.pid /sbin/cgrulesengd $OPTIONS
 	RETVAL=$?
 	if [ $RETVAL -ne 0 ]; then
 		return 7
