@@ -9,6 +9,7 @@ Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.tar.bz2
 # Source0-md5:	beecca8770155afa62981076e96d4c9c
 Source1:	cgconfig.init
 Source2:	cgred.init
+Patch0:		%{name}-pam.patch
 URL:		http://libcg.sourceforge.net/
 BuildRequires:	bison
 BuildRequires:	flex
@@ -65,6 +66,7 @@ Moduł PAM dla libcgroup.
 
 %prep
 %setup -q
+%patch0 -p1
 
 %build
 %configure \
@@ -88,12 +90,11 @@ cp -a samples/cgred.conf $RPM_BUILD_ROOT/etc/sysconfig/cgred.conf
 cp -a samples/cgconfig.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/cgconfig
 cp -a samples/cg{config,rules,snapshot_blacklist}.conf $RPM_BUILD_ROOT%{_sysconfdir}
 
-mv -f $RPM_BUILD_ROOT/%{_lib}/security/pam_cgroup.so{.*.*.*,}
 mv $RPM_BUILD_ROOT%{_libdir}/libcgroup.so.* $RPM_BUILD_ROOT/%{_lib}
 ln -snf ../../%{_lib}/$(basename $RPM_BUILD_ROOT/%{_lib}/libcgroup.so.*.*.*) $RPM_BUILD_ROOT%{_libdir}/libcgroup.so
 
-%{__rm} $RPM_BUILD_ROOT/%{_lib}/security/pam_cgroup.so.*
-%{__rm} $RPM_BUILD_ROOT{/%{_lib}/security,%{_libdir}}/*.la
+%{__rm} $RPM_BUILD_ROOT/%{_lib}/security/pam_cgroup.la
+%{__rm} $RPM_BUILD_ROOT%{_libdir}/*.la
 
 %clean
 rm -rf $RPM_BUILD_ROOT

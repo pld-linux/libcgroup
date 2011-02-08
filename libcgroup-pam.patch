@@ -1,0 +1,11 @@
+--- libcgroup-0.37/src/pam/Makefile.am.orig	2010-10-20 15:59:13.000000000 +0200
++++ libcgroup-0.37/src/pam/Makefile.am	2011-02-08 21:38:12.020693065 +0100
+@@ -4,7 +4,7 @@
+ 
+ pamlib_LTLIBRARIES = pam_cgroup.la
+ pam_cgroup_la_SOURCES = pam_cgroup.c
+-pam_cgroup_la_LDFLAGS = -module
++pam_cgroup_la_LDFLAGS = -module -avoid-version
+ pam_cgroup_la_LIBADD = $(top_builddir)/src/.libs/libcgroup.la -lpam
+ 
+ endif
