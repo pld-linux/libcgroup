@@ -6,7 +6,7 @@
 #		into cgroups based on UID/GID.
 #
 # processname:	cgrulesengd
-# pidfile:	/var/run/cgred.pid
+# pidfile:	/var/run/cgrulesengd.pid
 #
 
 # Source function library
@@ -41,13 +41,13 @@ start() {
 		[ -n "$SOCKET_GROUP" ] && OPTIONS="$OPTIONS -g $SOCKET_GROUP"
 	fi
 
-	daemon --pidfile /var/run/cgred.pid /sbin/cgrulesengd $OPTIONS
+	daemon --pidfile /var/run/cgrulesengd.pid /sbin/cgrulesengd $OPTIONS
 	RETVAL=$?
 	if [ $RETVAL -ne 0 ]; then
 		return 7
 	fi
 	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/cgred
-	pidof cgrulesengd > /var/run/cgred.pid
+	pidof cgrulesengd > /var/run/cgrulesengd.pid
 }
 
 stop() {
@@ -57,16 +57,16 @@ stop() {
 	fi
 
 	msg_stopping "CGroup Rules Engine Daemon"
-	killproc --pidfile /var/run/cgred.pid cgrulesengd -TERM
+	killproc --pidfile /var/run/cgrulesengd.pid cgrulesengd -TERM
 	RETVAL=$?
 	if [ $RETVAL -eq 0 ] ; then
-		rm -f /var/lock/subsys/cgred /var/run/cgred.pid
+		rm -f /var/lock/subsys/cgred /var/run/cgrulesengd.pid
 	fi
 }
 
 reload() {
 	if [ ! -f /var/lock/subsys/cgred ] ; then
-		msg_not_running "cgred"
+		msg_not_running "CGroup Rules Engine Daemon"
 		return
 	fi
 
@@ -83,7 +83,7 @@ reload() {
 
 condrestart() {
 	if [ ! -f /var/lock/subsys/cgred ]; then
-		msg_not_running "cgred"
+		msg_not_running "CGroup Rules Engine Daemon"
 		RETVAL=$1
 		return
 	fi
@@ -115,7 +115,7 @@ case "$1" in
 	condrestart 7
 	;;
   status)
-	status -p /var/run/cgred.pid cgred
+	status --pid /var/run/cgrulesengd.pid cgrulesengd
 	RETVAL=$?
 	;;
   *)
