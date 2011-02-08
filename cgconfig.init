@@ -14,6 +14,7 @@ CREATE_DEFAULT=yes
 [ -f /etc/sysconfig/cgconfig ] && . /etc/sysconfig/cgconfig
 
 create_default_groups() {
+	local defaultcgroup controllers
 	if [ -f /etc/cgrules.conf ]; then
 		defaultcgroup=$(awk '/^\*[\t ]+/ { print $3; exit }' /etc/cgrules.conf)
 		if [ -n "$defaultcgroup" -a "$defaultcgroup" = "*" ]; then
@@ -42,9 +43,10 @@ create_default_groups() {
 	# special rule for cpusets
 	#
 	if echo $controllers | grep -q -w cpuset; then
-		cpus=`cgget -nv -r cpuset.cpus /`
+		local cpus mems
+		cpus=$(cgget -nv -r cpuset.cpus /)
 		cgset -r cpuset.cpus=$cpus $defaultcgroup
-		mems=`cgget -nv -r cpuset.mems /`
+		mems=$(cgget -nv -r cpuset.mems /)
 		cgset -r cpuset.mems=$mems $defaultcgroup
 	fi
 
@@ -52,7 +54,7 @@ create_default_groups() {
 	# Classify everything to default cgroup. Ignore errors, some processes
 	# may exit after ps is run and before cgclassify moves them.
 	#
-	cgclassify -g $controllers:$defaultcgroup `ps --no-headers -eL o tid` 2>/dev/null || :
+	cgclassify -g $controllers:$defaultcgroup $(ps --no-headers -eL o tid) 2>/dev/null || :
 }
 
 start() {
@@ -63,11 +65,12 @@ start() {
 	fi
 	if [ ! -s /etc/cgconfig.conf ]; then
 		nls "/etc/cgconfig.conf is not configured"
-		return 6
+		RETVAL=6
+		return
 	fi
 	msg_starting "cgconfig"; busy
 	local out
-	out=`/sbin/cgconfigparser -l /etc/cgconfig.conf 2>&1`
+	out=$(/sbin/cgconfigparser -l /etc/cgconfig.conf 2>&1)
 	RETVAL=$?
 	if [ $RETVAL -ne 0 ]; then
 		fail
@@ -84,34 +87,45 @@ start() {
 }
 
 stop() {
-	if [ -f /var/lock/subsys/cgconfig ]; then
-		msg_stopping "cgconfig"
-		cgclear
-		rm -f /var/lock/subsys/cgconfig
-		ok
-	else
+	if [ ! -f /var/lock/subsys/cgconfig ]; then
 		msg_not_running "cgconfig"
+		return
 	fi
+
+	msg_stopping "cgconfig"
+	cgclear
+	rm -f /var/lock/subsys/cgconfig
+	ok
+}
+
+condrestart() {
+	if [ ! -f /var/lock/subsys/cgconfig ]; then
+		msg_not_running "cgconfig"
+		RETVAL=$1
+		return
+	fi
+
+	stop
+	start
 }
 
 RETVAL=0
-
 case "$1" in
   start)
 	start
 	;;
   stop)
-	stop;
+	stop
 	;;
-  restart|reload)
+  restart)
 	stop
 	start
 	;;
-  condrestart)
-	if [ -f /var/lock/subsys/cgconfig ] ; then
-		stop
-		start
-	fi
+  try-restart)
+	condrestart 0
+	;;
+  force-reload)
+	condrestart 7
 	;;
   status)
 	if [ -f /var/lock/subsys/cgconfig ] ; then
@@ -123,7 +137,7 @@ case "$1" in
 	fi
 	;;
   *)
-	msg_usage "$0 {start|stop|restart|condrestart|status}"
+	msg_usage "$0 {start|stop|restart|try-restart|force-reload|status}"
 	exit 3
 	;;
 esac
