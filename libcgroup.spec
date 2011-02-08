@@ -37,13 +37,14 @@ It provides API to create/delete and modify cgroup nodes. It will also
 in the future allow creation of persistent configuration for control
 groups and provide scripts to manage that configuration.
 
-%package pam
-Summary:	PAM module for %{name}
+%package -n pam-pam_cgroup
+Summary:	PAM module for libcgroup
 Group:		Libraries
 Requires:	%{name} = %{version}-%{release}
+Obsoletes:	libcgroup-pam
 
-%description pam
-PAM module for %{name}.
+%description -n pam-pam_cgroup
+PAM module for libcgroup.
 
 %prep
 %setup -q
@@ -114,7 +115,7 @@ fi
 %{_mandir}/man5/cg*.5*
 %{_mandir}/man8/cg*.8*
 
-%files pam
+%files -n pam-pam_cgroup
 %defattr(644,root,root,755)
 %attr(755,root,root) /%{_lib}/security/pam_cgroup.so
 
