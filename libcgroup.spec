@@ -1,13 +1,13 @@
-# TODO
-# - pldize initscripts
 Summary:	Tools and libraries to control and monitor control groups
 Name:		libcgroup
 Version:	0.37
-Release:	1
+Release:	1.1
 License:	LGPL v2+
 Group:		Libraries
 Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.tar.bz2
 # Source0-md5:	beecca8770155afa62981076e96d4c9c
+Source1:	cgconfig.init
+Source2:	cgred.init
 URL:		http://libcg.sourceforge.net/
 BuildRequires:	bison
 BuildRequires:	flex
@@ -63,6 +63,9 @@ install -d $RPM_BUILD_ROOT/etc/sysconfig
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
+
+install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/cgconfig
+install %{SOURCE2} $RPM_BUILD_ROOT/etc/rc.d/init.d/cgred
 
 cp -a samples/cgred.conf $RPM_BUILD_ROOT/etc/sysconfig/cgred.conf
 cp -a samples/cgconfig.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/cgconfig
