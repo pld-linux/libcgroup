@@ -5,7 +5,7 @@ Name:		libcgroup
 Version:	0.37
 Release:	1
 License:	LGPL v2+
-Group:		Development/Libraries
+Group:		Libraries
 Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.tar.bz2
 # Source0-md5:	beecca8770155afa62981076e96d4c9c
 URL:		http://libcg.sourceforge.net/
@@ -19,7 +19,7 @@ Requires:	procps
 Requires:	rc-scripts
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_exec_prefix	/
+%define		_exec_prefix	%{nil}
 %define		_libdir		%{_prefix}/%{_lib}
 
 %description
@@ -51,6 +51,7 @@ PAM module for libcgroup.
 
 %build
 %configure \
+	--disable-silent-rules \
 	--enable-initscript-install \
 	--enable-pam-module-dir=/%{_lib}/security
 
