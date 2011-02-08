@@ -105,7 +105,7 @@ case "$1" in
 	stop
 	start
 	;;
-  reload|flash)
+  reload)
   	reload
 	;;
   try-restart)
