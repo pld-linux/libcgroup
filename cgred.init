@@ -57,7 +57,7 @@ stop() {
 	fi
 
 	msg_stopping "CGroup Rules Engine Daemon"
-	killproc -p /var/run/cgred.pid cgrulesengd -TERM
+	killproc --pidfile /var/run/cgred.pid cgrulesengd -TERM
 	RETVAL=$?
 	if [ $RETVAL -eq 0 ] ; then
 		rm -f /var/lock/subsys/cgred /var/run/cgred.pid
