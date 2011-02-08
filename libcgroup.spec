@@ -1,4 +1,5 @@
-Summary:	Tools and libraries to control and monitor control groups
+Summary:	Tools and library to control and monitor control groups
+Summary(pl.UTF-8):	Narzędzia i biblioteka do kontrolowania i monitorowania grup kontroli
 Name:		libcgroup
 Version:	0.37
 Release:	2
@@ -27,8 +28,14 @@ Control groups infrastructure. The tools and library help manipulate,
 control, administrate and monitor control groups and the associated
 controllers.
 
+%description -l pl.UTF-8
+Ten pakiet stanowi infrastrukturę grup kontroli (cgroups). Narzędzia i
+biblioteka pomagają modyfikować, sterować, administrować i
+modyfikować grupy kontroli i powiązane z nimi kontrolery.
+
 %package devel
-Summary:	Development libraries for %{name}
+Summary:	Header files for cgroup library
+Summary(pl.UTF-8):	Pliki nagłówkowe biblioteki cgroup
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 
@@ -37,14 +44,24 @@ It provides API to create/delete and modify cgroup nodes. It will also
 in the future allow creation of persistent configuration for control
 groups and provide scripts to manage that configuration.
 
+%description devel -l pl.UTF-8
+Ten pakiet udostępnia API do tworzenia, usuwania i modyfikowania
+węzłów cgroup. W przyszłości pozwoli także na tworzenie trwałej
+konfiguracji grup kontroli i udostępni skrypty do zarządzania taką
+konfiguracją.
+
 %package -n pam-pam_cgroup
 Summary:	PAM module for libcgroup
+Summary(pl.UTF-8):	Moduł PAM dla libcgroup
 Group:		Libraries
 Requires:	%{name} = %{version}-%{release}
 Obsoletes:	libcgroup-pam
 
 %description -n pam-pam_cgroup
 PAM module for libcgroup.
+
+%description -n pam-pam_cgroup -l pl.UTF-8
+Moduł PAM dla libcgroup.
 
 %prep
 %setup -q
