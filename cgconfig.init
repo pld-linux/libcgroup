@@ -30,7 +30,7 @@ create_default_groups() {
 	# Find all mounted subsystems and create comma-separated list
 	# of controllers.
 	#
-	controllers=`lssubsys 2>/dev/null | awk '{ if (v) v=v","$0 ; else v=$0 } END { print v }'`
+	controllers=`lssubsys 2>/dev/null | awk '{ if (v) v=v","$0 ; else v=$0 } END { printf v }'`
 
 	#
 	# Create the default group, ignore errors when the default group
