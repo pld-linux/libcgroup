@@ -13,23 +13,26 @@
 . /etc/rc.d/init.d/functions
 
 start() {
-	if [ -f "/var/lock/subsys/cgred" ] ; then
+	if [ -f /var/lock/subsys/cgred ]; then
 		msg_already_running "CGroup Rules Engine Daemon"
 		return
 	fi
 
 	if [ ! -s /etc/cgrules.conf ]; then
 		nls "CGroup Rules Engine Daemon not configured"
-		return 6
+		RETVAL=6
+		return
 	fi
-	if ! grep -qs "^cgroup" /proc/mounts ; then
+	if ! grep -qs "^cgroup" /proc/mounts; then
 		nls "Cannot find cgroups, is cgconfig service running?"
-		return 1
+		RETVAL=1
+		return
 	fi
+
 	msg_staring "CGroup Rules Engine Daemon"
 	# Read in configuration options.
 	OPTIONS=""
-	if [ -f "/etc/sysconfig/cgred.conf" ] ; then
+	if [ -f /etc/sysconfig/cgred.conf ]; then
 		. /etc/sysconfig/cgred.conf
 
 		OPTIONS="$NODAEMON $LOG"
@@ -44,21 +47,49 @@ start() {
 		return 7
 	fi
 	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/cgred
-	echo "`pidof cgrulesengd`" > /var/run/cgred.pid
+	pidof cgrulesengd > /var/run/cgred.pid
 }
 
 stop() {
-	if [ -f /var/lock/subsys/cgred ]; then
-		msg_stopping "CGroup Rules Engine Daemon"
-		killproc -p /var/run/cgred.pid cgrulesengd -TERM
-		RETVAL=$?
-		if [ $RETVAL -eq 0 ] ; then
-			rm -f /var/lock/subsys/cgred
-			rm -f /var/run/cgred.pid
-		fi
-	else
+	if [ ! -f /var/lock/subsys/cgred ]; then
 		msg_not_running "CGroup Rules Engine Daemon"
+		return
 	fi
+
+	msg_stopping "CGroup Rules Engine Daemon"
+	killproc -p /var/run/cgred.pid cgrulesengd -TERM
+	RETVAL=$?
+	if [ $RETVAL -eq 0 ] ; then
+		rm -f /var/lock/subsys/cgred /var/run/cgred.pid
+	fi
+}
+
+reload() {
+	if [ ! -f /var/lock/subsys/cgred ] ; then
+		msg_not_running "cgred"
+		return
+	fi
+
+	show "Reloading rules configuration..."
+	# SIGUSR2
+	kill -s 12 $(cat ${pidfile})
+	RETVAL=$?
+	if [ $RETVAL -eq 0 ]; then
+		fail
+	else
+		ok
+	fi
+}
+
+condrestart() {
+	if [ ! -f /var/lock/subsys/cgred ]; then
+		msg_not_running "cgred"
+		RETVAL=$1
+		return
+	fi
+
+	stop
+	start
 }
 
 RETVAL=0
@@ -66,43 +97,29 @@ RETVAL=0
 case "$1" in
   start)
 	start
-	RETVAL=$?
 	;;
   stop)
 	stop
-	RETVAL=$?
-	;;
-  status)
-	status -p /var/run/cgred.pid cgred
-	RETVAL=$?
 	;;
   restart)
 	stop
 	start
 	;;
-  condrestart)
-	if [ -f /var/lock/subsys/cgred ] ; then
-		stop
-		start
-	fi
-	;;
   reload|flash)
-	if [ -f /var/lock/subsys/cgred ] ; then
-		show "Reloading rules configuration..."
-		# SIGUSR2
-		kill -s 12 `cat ${pidfile}`
-		RETVAL=$?
-		if [ $RETVAL -eq 0 ] ; then
-			fail
-		else
-			ok
-		fi
-	else
-		msg_not_running "cgred"
-	fi
+  	reload
+	;;
+  try-restart)
+	condrestart 0
+	;;
+  force-reload)
+	condrestart 7
+	;;
+  status)
+	status -p /var/run/cgred.pid cgred
+	RETVAL=$?
 	;;
   *)
-	msg_usage "$0 {start|stop|status|restart|condrestart|reload}"
+	msg_usage "$0 {start|stop|restart|try-restart|reload|force-reload|status}"
 	exit 3
 	;;
 esac
