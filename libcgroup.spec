@@ -108,7 +108,7 @@ fi
 %attr(755,root,root) /sbin/cg*
 
 %attr(755,root,root) /%{_lib}/libcgroup.so.*.*.*
-%attr(755,root,root) %ghost /%{_lib}/libcgroup.so.?
+%attr(755,root,root) %ghost /%{_lib}/libcgroup.so.1
 
 %{_mandir}/man1/ls*.1*
 %{_mandir}/man1/cg*.1*
