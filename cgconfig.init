@@ -17,8 +17,7 @@ create_default_groups() {
 	if [ -f /etc/cgrules.conf ]; then
 		defaultcgroup=$(awk '/^\*[\t ]+/ { print $3; exit }' /etc/cgrules.conf)
 		if [ -n "$defaultcgroup" -a "$defaultcgroup" = "*" ]; then
-			nls "/etc/cgrules.conf incorrect"
-			nls "Overriding it"
+		#	nls "/etc/cgrules.conf incorrect. Overriding it"
 			defaultcgroup=
 		fi
 	fi
@@ -31,7 +30,7 @@ create_default_groups() {
 	# Find all mounted subsystems and create comma-separated list
 	# of controllers.
 	#
-	controllers=`lssubsys 2>/dev/null | tr '\n' ',' | sed s/.$//`
+	controllers=`lssubsys 2>/dev/null | awk '{ if (v) v=v","$0 ; else v=$0 } END { print v }'`
 
 	#
 	# Create the default group, ignore errors when the default group
@@ -62,25 +61,25 @@ start() {
 		msg_already_running "cgconfig"
 		return
 	fi
-
-	msg_starting "cgconfig"
 	if [ ! -s /etc/cgconfig.conf ]; then
 		nls "/etc/cgconfig.conf is not configured"
 		return 6
 	fi
-
-	/sbin/cgconfigparser -l /etc/cgconfig.conf
-	retval=$?
-	if [ $retval -ne 0 ]; then
-		nls "Failed to parse /etc/cgconfig.conf"
-		return 1
+	msg_starting "cgconfig"; busy
+	local out
+	out=`/sbin/cgconfigparser -l /etc/cgconfig.conf 2>&1`
+	RETVAL=$?
+	if [ $RETVAL -ne 0 ]; then
+		fail
+		[ "$out" ] && echo >&2 "$out"
+		exit $RETVAL
 	fi
 
 	if is_yes "$CREATE_DEFAULT"; then
 		create_default_groups
 	fi
-	retval=$?
-	[ $retval -eq 0 ] && touch /var/lock/subsys/cgconfig
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/cgconfig
 	ok
 }
 
