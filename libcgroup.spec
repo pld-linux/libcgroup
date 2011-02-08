@@ -13,9 +13,9 @@ BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	libstdc++-devel
 BuildRequires:	pam-devel
-Requires(post):	/sbin/chkconfig
 Requires(post):	/sbin/ldconfig
-Requires(preun):	/sbin/chkconfig
+Requires(post,preun):	/sbin/chkconfig
+Requires:	procps
 Requires:	rc-scripts
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
