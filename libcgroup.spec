@@ -11,9 +11,12 @@ Source1:	cgconfig.init
 Source2:	cgred.init
 Patch0:		%{name}-pam.patch
 URL:		http://libcg.sourceforge.net/
+BuildRequires:	autoconf
+BuildRequires:	automake
 BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	libstdc++-devel
+BuildRequires:	libtool
 BuildRequires:	pam-devel
 Requires(post):	/sbin/ldconfig
 Requires(post,preun):	/sbin/chkconfig
@@ -31,8 +34,8 @@ controllers.
 
 %description -l pl.UTF-8
 Ten pakiet stanowi infrastrukturę grup kontroli (cgroups). Narzędzia i
-biblioteka pomagają modyfikować, sterować, administrować i
-modyfikować grupy kontroli i powiązane z nimi kontrolery.
+biblioteka pomagają modyfikować, sterować, administrować i modyfikować
+grupy kontroli i powiązane z nimi kontrolery.
 
 %package devel
 Summary:	Header files for cgroup library
@@ -69,6 +72,10 @@ Moduł PAM dla libcgroup.
 %patch0 -p1
 
 %build
+%{__libtoolize}
+%{__aclocal}
+%{__autoconf}
+%{__automake}
 %configure \
 	--disable-silent-rules \
 	--enable-initscript-install \
