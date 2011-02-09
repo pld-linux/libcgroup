@@ -1,0 +1,11 @@
+--- libcgroup-0.37/src/api.c~	2011-02-09 18:07:42.010413505 +0100
++++ libcgroup-0.37/src/api.c	2011-02-09 18:08:48.317243502 +0100
+@@ -1409,6 +1409,8 @@
+ 			cgroup_dbg("Changing ownership of %s\n", fts_path[0]);
+ 			error = cg_chown_recursive(fts_path,
+ 				cgroup->control_uid, cgroup->control_gid);
++			if (!error)
++				error = cg_chmod_recursive(cgroup, 0775, 1, 0664, 1);
+ 		}
+ 
+ 		if (error)
