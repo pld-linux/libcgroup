@@ -1,11 +1,168 @@
---- libcgroup-0.37/src/api.c~	2011-02-09 18:07:42.010413505 +0100
-+++ libcgroup-0.37/src/api.c	2011-02-09 18:08:48.317243502 +0100
-@@ -1409,6 +1409,8 @@
+diff -ur libcgroup-0.37/doc/man/cgconfig.conf.5 libcgroup-0.37-mode/doc/man/cgconfig.conf.5
+--- libcgroup-0.37/doc/man/cgconfig.conf.5	2010-12-07 16:42:41.000000000 +0100
++++ libcgroup-0.37-mode/doc/man/cgconfig.conf.5	2011-02-09 19:11:47.076601002 +0100
+@@ -111,12 +111,15 @@
+ .ft B
+ uid = <task user>;
+ gid = <task group>;
++mode = <task mode>;
+ .RE
+ }
+ admin {
+ .RS
+ uid = <admin name>;
+ gid = <admin group>;
++dmode = <admin directory mode>;
++fmode = <admin files mode>;
+ .RE
+ }
+ .RE
+@@ -133,10 +136,19 @@
+ file of the control group. I.e. this user and members of this
+ group has write access to the file.
+ .TP 17
++.B "task mode"
++Permission mode of \fItasks\fR file of the control group.
++The mode have to be set using octal numbers e.g. 640.
++.TP 17
+ .B "admin user/group"
+ Name of the user and the group, which owns the rest of control group's
+ files. These users are allowed to set subsystem
+ parameters and create subgroups.
++.TP 17
++.B "admin dmode/fmode"
++Permission mode of control group's directory (\fIdmode\fR) and files
++(\fIfmode\fR). The mode have to be set using octal numbers e.g. 775
++for \fIdmode\fR and 664 for \fIfmode\fR.
+ .LP
+ Permissions are related only to enclosing control group and are not
+ inherited by subgroups. If there is no
+diff -ur libcgroup-0.37/src/api.c libcgroup-0.37-mode/src/api.c
+--- libcgroup-0.37/src/api.c	2010-12-07 16:42:41.000000000 +0100
++++ libcgroup-0.37-mode/src/api.c	2011-02-09 18:57:25.455591513 +0100
+@@ -1409,6 +1409,10 @@
  			cgroup_dbg("Changing ownership of %s\n", fts_path[0]);
  			error = cg_chown_recursive(fts_path,
  				cgroup->control_uid, cgroup->control_gid);
 +			if (!error)
-+				error = cg_chmod_recursive(cgroup, 0775, 1, 0664, 1);
++				error = cg_chmod_recursive(cgroup,
++						cgroup->control_dmode, cgroup->control_dmode,
++						cgroup->control_fmode, cgroup->control_fmode);
  		}
  
  		if (error)
+@@ -1458,6 +1462,13 @@
+ 			if (error) {
+ 				last_errno = errno;
+ 				error = ECGOTHER;
++				goto err;
++			}
++			if (cgroup->tasks_mode != 0)
++				error = chmod(path, cgroup->tasks_mode);
++			if (error) {
++				last_errno = errno;
++				error = ECGOTHER;
+ 				goto err;
+ 			}
+ 		}
+diff -ur libcgroup-0.37/src/config.c libcgroup-0.37-mode/src/config.c
+--- libcgroup-0.37/src/config.c	2010-12-07 16:42:41.000000000 +0100
++++ libcgroup-0.37-mode/src/config.c	2011-02-09 18:59:15.330591502 +0100
+@@ -226,6 +226,29 @@
+ 		}
+ 		config_cgroup->tasks_gid = val;
+ 	}
++	if (!strcmp(perm_type, "mode")) {
++		/* allowed mode strings are octal version: "755" */
++		mode_t mode = 0;
++		int pos = 0; /* position of the number iin string */
++		int i;
++		int j = 64;
++
++		while (pos < 3) {
++			if (value[pos] < '0' || value[pos] >= '8')
++				goto group_task_error;
++			i = (int)value[pos] - (int)'0';
++			/* parse the permission triple*/
++			mode = mode + i*j;
++			j = j / 8;
++			pos++;
++		}
++
++		/* the string have to contain three characters */
++		if (value[pos] != '\0')
++			goto group_task_error;
++
++		config_cgroup->tasks_mode = mode;
++	}
+ 
+ 	free(perm_type);
+ 	free(value);
+@@ -292,6 +315,52 @@
+ 		}
+ 		config_cgroup->control_gid = val;
+ 	}
++	if (!strcmp(perm_type, "dmode")) {
++		/* allowed mode strings are octal version: "755" */
++		mode_t mode = 0;
++		int pos = 0; /* position of the number iin string */
++		int i;
++		int j = 64;
++
++		while (pos < 3) {
++			if (value[pos] < '0' || value[pos] >= '8')
++				goto admin_error;
++			i = (int)value[pos] - (int)'0';
++			/* parse the permission triple*/
++			mode = mode + i*j;
++			j = j / 8;
++			pos++;
++		}
++
++		/* the string have to contain three characters */
++		if (value[pos] != '\0')
++			goto admin_error;
++
++		config_cgroup->control_dmode = mode;
++	}
++	if (!strcmp(perm_type, "fmode")) {
++		/* allowed mode strings are octal version: "755" */
++		mode_t mode = 0;
++		int pos = 0; /* position of the number iin string */
++		int i;
++		int j = 64;
++
++		while (pos < 3) {
++			if (value[pos] < '0' || value[pos] >= '8')
++				goto admin_error;
++			i = (int)value[pos] - (int)'0';
++			/* parse the permission triple*/
++			mode = mode + i*j;
++			j = j / 8;
++			pos++;
++		}
++
++		/* the string have to contain three characters */
++		if (value[pos] != '\0')
++			goto admin_error;
++
++		config_cgroup->control_fmode = mode;
++	}
+ 
+ 	free(perm_type);
+ 	free(value);
+diff -ur libcgroup-0.37/src/libcgroup-internal.h libcgroup-0.37-mode/src/libcgroup-internal.h
+--- libcgroup-0.37/src/libcgroup-internal.h	2010-10-20 15:59:13.000000000 +0200
++++ libcgroup-0.37-mode/src/libcgroup-internal.h	2011-02-09 19:14:13.803601030 +0100
+@@ -84,8 +84,11 @@
+ 	int index;
+ 	uid_t tasks_uid;
+ 	gid_t tasks_gid;
++	mode_t tasks_mode;
+ 	uid_t control_uid;
+ 	gid_t control_gid;
++	mode_t control_dmode;
++	mode_t control_fmode;
+ };
+ 
+ 
