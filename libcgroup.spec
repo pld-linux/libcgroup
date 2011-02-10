@@ -2,7 +2,7 @@ Summary:	Tools and library to control and monitor control groups
 Summary(pl.UTF-8):	Narzędzia i biblioteka do kontrolowania i monitorowania grup kontroli
 Name:		libcgroup
 Version:	0.37
-Release:	2.2
+Release:	2.3
 License:	LGPL v2+
 Group:		Libraries
 Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.tar.bz2
@@ -11,6 +11,7 @@ Source1:	cgconfig.init
 Source2:	cgred.init
 Patch0:		%{name}-pam.patch
 Patch1:		%{name}-group-write.patch
+Patch2:		%{name}-conf.patch
 URL:		http://libcg.sourceforge.net/
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -21,8 +22,12 @@ BuildRequires:	libtool
 BuildRequires:	pam-devel
 Requires(post):	/sbin/ldconfig
 Requires(post,preun):	/sbin/chkconfig
+Requires(postun):	/usr/sbin/groupdel
+Requires(pre):	/usr/bin/getgid
+Requires(pre):	/usr/sbin/groupadd
 Requires:	procps
 Requires:	rc-scripts
+Provides:	group(cgred)
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_exec_prefix	%{nil}
@@ -72,6 +77,7 @@ Moduł PAM dla libcgroup.
 %setup -q
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 %build
 %{__libtoolize}
@@ -108,8 +114,8 @@ ln -snf ../../%{_lib}/$(basename $RPM_BUILD_ROOT/%{_lib}/libcgroup.so.*.*.*) $RP
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-#%%pre
-#getent group cgred >/dev/null || groupadd cgred
+%pre
+%groupadd -g 261 -r -f cgred
 
 %post
 /sbin/ldconfig
@@ -124,23 +130,34 @@ if [ $1 = 0 ]; then
 	/sbin/chkconfig --del cgred
 fi
 
-%postun -p /sbin/ldconfig
+%postun
+/sbin/ldconfig
+if [ "$1" = "0" ]; then
+	%groupremove cgred
+fi
 
 %files
 %defattr(644,root,root,755)
 %doc README README_daemon
-%attr(754,root,root) /etc/rc.d/init.d/cg*
-%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/cg*
+%attr(754,root,root) /etc/rc.d/init.d/cgconfig
+%attr(754,root,root) /etc/rc.d/init.d/cgred
+%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/cgconfig
+%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/cgred.conf
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/cg*.conf
-
-%attr(755,root,root) /bin/cg*
-%attr(755,root,root) /bin/lscgroup
-%attr(755,root,root) /bin/lssubsys
-%attr(755,root,root) /sbin/cg*
-
 %attr(755,root,root) /%{_lib}/libcgroup.so.*.*.*
 %attr(755,root,root) %ghost /%{_lib}/libcgroup.so.1
-
+%attr(755,root,root) /bin/cgclassify
+%attr(755,root,root) /bin/cgcreate
+%attr(755,root,root) /bin/cgdelete
+%attr(2755,root,cgred) /bin/cgexec
+%attr(755,root,root) /bin/cgget
+%attr(755,root,root) /bin/cgset
+%attr(755,root,root) /bin/cgsnapshot
+%attr(755,root,root) /bin/lscgroup
+%attr(755,root,root) /bin/lssubsys
+%attr(755,root,root) /sbin/cgclear
+%attr(755,root,root) /sbin/cgconfigparser
+%attr(755,root,root) /sbin/cgrulesengd
 %{_mandir}/man1/ls*.1*
 %{_mandir}/man1/cg*.1*
 %{_mandir}/man5/cg*.5*
