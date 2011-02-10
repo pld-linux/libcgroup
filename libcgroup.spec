@@ -2,7 +2,7 @@ Summary:	Tools and library to control and monitor control groups
 Summary(pl.UTF-8):	Narzędzia i biblioteka do kontrolowania i monitorowania grup kontroli
 Name:		libcgroup
 Version:	0.37
-Release:	2.3
+Release:	2.5
 License:	LGPL v2+
 Group:		Libraries
 Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.tar.bz2
@@ -149,7 +149,7 @@ fi
 %attr(755,root,root) /bin/cgclassify
 %attr(755,root,root) /bin/cgcreate
 %attr(755,root,root) /bin/cgdelete
-%attr(2755,root,cgred) /bin/cgexec
+%attr(755,root,root) /bin/cgexec
 %attr(755,root,root) /bin/cgget
 %attr(755,root,root) /bin/cgset
 %attr(755,root,root) /bin/cgsnapshot
