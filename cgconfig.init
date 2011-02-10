@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # cgconfig	Control Groups Configuration Startup
-# chkconfig:	2345 05 95
+# chkconfig:	2345 01 99
 # description:	This script runs the cgconfigparser utility to parse and setup \
 #		the control group filesystem. It uses /etc/cgconfig.conf \
 #		and parses the configuration specified in there.

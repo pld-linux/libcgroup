@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # cgred		CGroups Rules Engine Daemon
-# chkconfig:	2345 14 86
+# chkconfig:	2345 02 98
 # description:	This is a daemon for automatically classifying processes \
 #		into cgroups based on UID/GID.
 #
