@@ -42,14 +42,14 @@ diff -ur libcgroup-0.37/samples/cgconfig.conf libcgroup-0.37-conf/samples/cgconf
 -#	cpu = /mnt/cgroups/cpu;
 -#	cpuacct = /mnt/cgroups/cpuacct;
 -#}
-+# By default, mount all controllers to /dev//cgroup/<controller>
++# By default, mount all controllers to /dev/cgroup/<controller>
 +
 +mount {
 +	blkio   = /dev/cgroup/blkio;
 +	cpu     = /dev/cgroup/cpu;
 +	cpuacct = /dev/cgroup/cpuacct;
 +	cpuset  = /dev/cgroup/cpuset;
-+	debug   = /dev/cgroup/debug;
++#	debug   = /dev/cgroup/debug;
 +	devices = /dev/cgroup/devices;
 +	freezer = /dev/cgroup/freezer;
 +	memory  = /dev/cgroup/memory;
