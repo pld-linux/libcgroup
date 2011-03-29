@@ -121,6 +121,12 @@ rm -rf $RPM_BUILD_ROOT
 /sbin/ldconfig
 /sbin/chkconfig --add cgred
 /sbin/chkconfig --add cgconfig
+if [ ! -f /var/lock/subsys/cgconfig ]; then
+	echo 'Run "/sbin/service cgconfig start" to setup cgroup rules.'
+fi
+if [ ! -f /var/lock/subsys/cgred ]; then
+	echo 'Run "/sbin/service cgred start" to start control group rules daemon.'
+fi
 
 %preun
 if [ $1 = 0 ]; then
