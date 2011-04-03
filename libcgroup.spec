@@ -1,12 +1,12 @@
 Summary:	Tools and library to control and monitor control groups
 Summary(pl.UTF-8):	Narzędzia i biblioteka do kontrolowania i monitorowania grup kontroli
 Name:		libcgroup
-Version:	0.37
-Release:	2.5
+Version:	0.37.1
+Release:	1
 License:	LGPL v2+
 Group:		Libraries
 Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.tar.bz2
-# Source0-md5:	beecca8770155afa62981076e96d4c9c
+# Source0-md5:	24a41b18de112e8d085bb1f7d9e82af7
 Source1:	cgconfig.init
 Source2:	cgred.init
 Patch0:		%{name}-pam.patch
