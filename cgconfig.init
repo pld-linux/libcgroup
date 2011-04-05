@@ -94,6 +94,7 @@ stop() {
 
 	msg_stopping "cgconfig"
 	cgclear
+	cgclear
 	rm -f /var/lock/subsys/cgconfig
 	ok
 }
