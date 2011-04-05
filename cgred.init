@@ -41,6 +41,9 @@ start() {
 		[ -n "$SOCKET_GROUP" ] && OPTIONS="$OPTIONS -g $SOCKET_GROUP"
 	fi
 
+	# netlink connector
+	modprobe -q cn > /dev/null 2>&1
+
 	daemon --pidfile /var/run/cgrulesengd.pid /sbin/cgrulesengd $OPTIONS
 	RETVAL=$?
 	if [ $RETVAL -ne 0 ]; then
