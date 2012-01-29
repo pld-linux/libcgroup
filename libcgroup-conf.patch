@@ -42,19 +42,19 @@ diff -ur libcgroup-0.37/samples/cgconfig.conf libcgroup-0.37-conf/samples/cgconf
 -#	cpu = /mnt/cgroups/cpu;
 -#	cpuacct = /mnt/cgroups/cpuacct;
 -#}
-+# By default, mount all controllers to /dev/cgroup/<controller>
-+
-+mount {
-+	blkio   = /dev/cgroup/blkio;
-+	cpu     = /dev/cgroup/cpu;
-+	cpuacct = /dev/cgroup/cpuacct;
-+	cpuset  = /dev/cgroup/cpuset;
-+#	debug   = /dev/cgroup/debug;
-+	devices = /dev/cgroup/devices;
-+	freezer = /dev/cgroup/freezer;
-+	memory  = /dev/cgroup/memory;
-+	net_cls = /dev/cgroup/net_cls;
-+}
++# By default, mount all controllers to /sys/fs/cgroup/<controller>
++#
++#mount {
++#	blkio   = /sys/fs/cgroup/blkio;
++#	cpu     = /sys/fs/cgroup/cpu;
++#	cpuacct = /sys/fs/cgroup/cpuacct;
++#	cpuset  = /sys/fs/cgroup/cpuset;
++##	debug   = /sys/fs/cgroup/debug;
++#	devices = /sys/fs/cgroup/devices;
++#	freezer = /sys/fs/cgroup/freezer;
++#	memory  = /sys/fs/cgroup/memory;
++#	net_cls = /sys/fs/cgroup/net_cls;
++#}
 +
 diff -ur libcgroup-0.37/samples/cgconfig.sysconfig libcgroup-0.37-conf/samples/cgconfig.sysconfig
 --- libcgroup-0.37/samples/cgconfig.sysconfig	2010-10-20 15:59:13.000000000 +0200
