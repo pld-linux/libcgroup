@@ -2,7 +2,7 @@ Summary:	Tools and library to control and monitor control groups
 Summary(pl.UTF-8):	Narzędzia i biblioteka do kontrolowania i monitorowania grup kontroli
 Name:		libcgroup
 Version:	0.37.1
-Release:	2
+Release:	3
 License:	LGPL v2+
 Group:		Libraries
 Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.tar.bz2
@@ -12,6 +12,8 @@ Source2:	cgred.init
 Patch0:		%{name}-pam.patch
 Patch1:		%{name}-group-write.patch
 Patch2:		%{name}-conf.patch
+Patch3:		libcgroup-0.36.2-systemd.patch
+Patch4:		libcgroup-0.37.1-systemd.patch
 URL:		http://libcg.sourceforge.net/
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -78,6 +80,8 @@ Moduł PAM dla libcgroup.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
+%patch4 -p1
 
 %build
 %{__libtoolize}
