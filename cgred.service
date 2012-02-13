@@ -3,7 +3,6 @@ Description=CGroups Rules Engine Daemon
 After=syslog.target
 
 [Service]
-Type=forking
 EnvironmentFile=-/etc/sysconfig/cgred
 ExecStart=/sbin/cgrulesengd -n $OPTIONS
 
