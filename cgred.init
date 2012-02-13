@@ -12,6 +12,9 @@
 # Source function library
 . /etc/rc.d/init.d/functions
 
+# Read in configuration options.
+[ -f /etc/sysconfig/cgred ] && . /etc/sysconfig/cgred
+
 start() {
 	if [ -f /var/lock/subsys/cgred ]; then
 		msg_already_running "CGroup Rules Engine Daemon"
@@ -30,16 +33,6 @@ start() {
 	fi
 
 	msg_starting "CGroup Rules Engine Daemon"
-	# Read in configuration options.
-	OPTIONS=""
-	if [ -f /etc/sysconfig/cgred.conf ]; then
-		. /etc/sysconfig/cgred.conf
-
-		OPTIONS="$NODAEMON $LOG"
-		[ -n "$LOG_FILE" ] && OPTIONS="$OPTIONS --logfile=$LOG_FILE"
-		[ -n "$SOCKET_USER" ] && OPTIONS="$OPTIONS -u $SOCKET_USER"
-		[ -n "$SOCKET_GROUP" ] && OPTIONS="$OPTIONS -g $SOCKET_GROUP"
-	fi
 
 	daemon --pidfile /var/run/cgrulesengd.pid /sbin/cgrulesengd $OPTIONS
 	RETVAL=$?

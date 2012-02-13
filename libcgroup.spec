@@ -1,19 +1,20 @@
+%define		_rc	rc1
 Summary:	Tools and library to control and monitor control groups
 Summary(pl.UTF-8):	Narzędzia i biblioteka do kontrolowania i monitorowania grup kontroli
 Name:		libcgroup
-Version:	0.37.1
-Release:	4
+Version:	0.38
+Release:	0.%{_rc}.1
 License:	LGPL v2+
 Group:		Libraries
-Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.tar.bz2
-# Source0-md5:	24a41b18de112e8d085bb1f7d9e82af7
+Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.%{_rc}.tar.bz2
+# Source0-md5:	6c2100af9840f54f8bf97836887a4517
 Source1:	cgconfig.init
 Source2:	cgred.init
+Source3:	cgconfig.service
+Source4:	cgred.service
+Source5:	cgred.sysconfig
 Patch0:		%{name}-pam.patch
-Patch1:		%{name}-group-write.patch
-Patch2:		%{name}-conf.patch
-Patch3:		libcgroup-0.36.2-systemd.patch
-Patch4:		libcgroup-0.37.1-systemd.patch
+Patch1:		%{name}-conf.patch
 URL:		http://libcg.sourceforge.net/
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -22,6 +23,7 @@ BuildRequires:	flex
 BuildRequires:	libstdc++-devel
 BuildRequires:	libtool
 BuildRequires:	pam-devel
+BuildRequires:	rpmbuild(macros) >= 1.626
 Requires(post):	/sbin/ldconfig
 Requires(post,preun):	/sbin/chkconfig
 Requires(postun):	/usr/sbin/groupdel
@@ -29,6 +31,7 @@ Requires(pre):	/usr/bin/getgid
 Requires(pre):	/usr/sbin/groupadd
 Requires:	procps
 Requires:	rc-scripts
+Requires:	systemd-units >= 37-0.10
 Provides:	group(cgred)
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -76,12 +79,9 @@ PAM module for libcgroup.
 Moduł PAM dla libcgroup.
 
 %prep
-%setup -q
+%setup -q -n %{name}-%{version}.%{_rc}
 %patch0 -p1
 %patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
 
 %build
 %{__libtoolize}
@@ -91,13 +91,14 @@ Moduł PAM dla libcgroup.
 %configure \
 	--disable-silent-rules \
 	--enable-initscript-install \
-	--enable-pam-module-dir=/%{_lib}/security
+	--enable-pam-module-dir=/%{_lib}/security \
+	--enable-opaque-hierarchy="name=systemd"
 
 %{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/etc/sysconfig
+install -d $RPM_BUILD_ROOT{/etc/sysconfig,%{systemdunitdir}}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
@@ -105,8 +106,10 @@ install -d $RPM_BUILD_ROOT/etc/sysconfig
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/cgconfig
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/rc.d/init.d/cgred
 
-cp -a samples/cgred.conf $RPM_BUILD_ROOT/etc/sysconfig/cgred.conf
-cp -a samples/cgconfig.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/cgconfig
+install %{SOURCE3} $RPM_BUILD_ROOT%{systemdunitdir}/cgconfig.service
+install %{SOURCE4} $RPM_BUILD_ROOT%{systemdunitdir}/cgred.service
+
+install %{SOURCE5} $RPM_BUILD_ROOT/etc/sysconfig/cgred
 cp -a samples/cg{config,rules,snapshot_blacklist}.conf $RPM_BUILD_ROOT%{_sysconfdir}
 
 mv $RPM_BUILD_ROOT%{_libdir}/libcgroup.so.* $RPM_BUILD_ROOT/%{_lib}
@@ -131,6 +134,9 @@ fi
 if [ ! -f /var/lock/subsys/cgred ]; then
 	echo 'Run "/sbin/service cgred start" to start control group rules daemon.'
 fi
+NORESTART=1
+%systemd_post cgconfig.service
+%systemd_post cgred.service
 
 %preun
 if [ $1 = 0 ]; then
@@ -139,21 +145,49 @@ if [ $1 = 0 ]; then
 	/sbin/chkconfig --del cgconfig
 	/sbin/chkconfig --del cgred
 fi
+%systemd_preun cgconfig.service
+%systemd_preun cgred.service
 
 %postun
 /sbin/ldconfig
 if [ "$1" = "0" ]; then
 	%groupremove cgred
 fi
+%systemd_reload
+
+%triggerpostun -- %{name} < 0.38-0.rc1.1
+if [ -f /etc/sysconfig/cgred.conf.rpmsave ]; then
+	. /etc/sysconfig/cgred.conf.rpmsave
+	OPTIONS=
+	[ -n "$NODAEMON" ] && OPTIONS="$OPTIONS $NODAEMON"
+	[ -n "$LOG" ] && OPTIONS="$OPTIONS $LOG"
+	if [ -n "$LOG_FILE" ]; then
+		OPTIONS="$OPTIONS -f $LOG_FILE"
+	else
+		OPTIONS="$OPTIONS -s"
+	fi
+	[ -n "$SOCKET_USER" ] && OPTIONS="$OPTIONS -u $SOCKET_USER"
+	if [ -n "$SOCKET_GROUP" ]; then
+		OPTIONS="$OPTIONS -g $SOCKET_GROUP"
+	else
+		OPTIONS="$OPTIONS -g cgred"
+	fi
+	echo >>/etc/sysconfig/cgred
+	echo "# Added by rpm trigger" >>/etc/sysconfig/cgred
+	echo "OPTIONS=\"$OPTIONS\"" >>/etc/sysconfig/cgred
+fi
+%systemd_trigger cgconfig.service
+%systemd_trigger cgred.service
 
 %files
 %defattr(644,root,root,755)
 %doc README README_daemon
 %attr(754,root,root) /etc/rc.d/init.d/cgconfig
 %attr(754,root,root) /etc/rc.d/init.d/cgred
-%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/cgconfig
-%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/cgred.conf
+%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/cgred
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/cg*.conf
+%{systemdunitdir}/cgconfig.service
+%{systemdunitdir}/cgred.service
 %attr(755,root,root) /%{_lib}/libcgroup.so.*.*.*
 %attr(755,root,root) %ghost /%{_lib}/libcgroup.so.1
 %attr(755,root,root) /bin/cgclassify

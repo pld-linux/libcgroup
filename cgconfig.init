@@ -10,52 +10,7 @@
 . /etc/rc.d/init.d/functions
 
 # read the config
-CREATE_DEFAULT=yes
 [ -f /etc/sysconfig/cgconfig ] && . /etc/sysconfig/cgconfig
-
-create_default_groups() {
-	local defaultcgroup controllers
-	if [ -f /etc/cgrules.conf ]; then
-		defaultcgroup=$(awk '/^\*[\t ]+/ { print $3; exit }' /etc/cgrules.conf)
-		if [ -n "$defaultcgroup" -a "$defaultcgroup" = "*" ]; then
-		#	nls "/etc/cgrules.conf incorrect. Overriding it"
-			defaultcgroup=
-		fi
-	fi
-
-	if [ -z $defaultcgroup ]; then
-		defaultcgroup=sysdefault/
-	fi
-
-	#
-	# Find all mounted subsystems and create comma-separated list
-	# of controllers.
-	#
-	controllers=$(lssubsys 2>/dev/null | awk '{ if (v) v=v","$0 ; else v=$0 } END { printf "%s", v }')
-
-	#
-	# Create the default group, ignore errors when the default group
-	# already exists.
-	#
-	cgcreate -f 664 -d 775 -g $controllers:$defaultcgroup 2>/dev/null
-
-	#
-	# special rule for cpusets
-	#
-	if echo $controllers | grep -q -w cpuset; then
-		local cpus mems
-		cpus=$(cgget -nv -r cpuset.cpus /)
-		cgset -r cpuset.cpus=$cpus $defaultcgroup
-		mems=$(cgget -nv -r cpuset.mems /)
-		cgset -r cpuset.mems=$mems $defaultcgroup
-	fi
-
-	#
-	# Classify everything to default cgroup. Ignore errors, some processes
-	# may exit after ps is run and before cgclassify moves them.
-	#
-	cgclassify -g $controllers:$defaultcgroup $(ps --no-headers -eL o tid) 2>/dev/null || :
-}
 
 start() {
 	# Check if the service is already running?
@@ -78,9 +33,6 @@ start() {
 		exit $RETVAL
 	fi
 
-	if is_yes "$CREATE_DEFAULT"; then
-		create_default_groups
-	fi
 	RETVAL=$?
 	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/cgconfig
 	ok
