@@ -12,6 +12,31 @@
 # read the config
 [ -f /etc/sysconfig/cgconfig ] && . /etc/sysconfig/cgconfig
 
+mount_cgroup() {
+	if [ -n "`grep /sys/fs/cgroup /proc/mounts`" ]; then
+		return 0
+	fi
+
+	# kernel provides cgroups?
+	if [ ! -e /proc/cgroups ]; then
+		return 0
+	fi
+
+	run_cmd "Mounting /sys/fs/cgroup" mount -t tmpfs -o uid=0,gid=0,mode=0755 cgroup /sys/fs/cgroup
+}
+
+umount_cgroup() {
+	# If /sys/fs/cgroup is not mounted, we don't bother
+	if [ -z "`grep /sys/fs/cgroup /proc/mounts`" ]; then
+		return 0
+	fi
+
+	# Don't try to get too smart, just optimistically try to umount all
+	# that we think we mounted
+	run_cmd "Unmounting /sys/fs/cgroup" umount /sys/fs/cgroup
+	return $?
+}
+
 start() {
 	# Check if the service is already running?
 	if [ -f /var/lock/subsys/cgconfig ]; then
@@ -23,6 +48,7 @@ start() {
 		RETVAL=6
 		return
 	fi
+	mount_cgroup
 	msg_starting "cgconfig"; busy
 	local out
 	out=$(/sbin/cgconfigparser -l /etc/cgconfig.conf 2>&1)
@@ -46,9 +72,11 @@ stop() {
 
 	msg_stopping "cgconfig"
 	cgclear
+	RETVAL=$?
 	cgclear
 	rm -f /var/lock/subsys/cgconfig
 	ok
+	umount_cgroup
 }
 
 condrestart() {
