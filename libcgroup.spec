@@ -15,7 +15,7 @@ Source5:	cgred.sysconfig
 Patch0:		%{name}-pam.patch
 Patch1:		%{name}-conf.patch
 URL:		http://libcg.sourceforge.net/
-BuildRequires:	autoconf
+BuildRequires:	autoconf >= 2.61
 BuildRequires:	automake
 BuildRequires:	bison
 BuildRequires:	flex
@@ -79,7 +79,7 @@ PAM module for libcgroup.
 Moduł PAM dla libcgroup.
 
 %prep
-%setup -q -n %{name}-%{version}.%{_rc}
+%setup -q
 %patch0 -p1
 %patch1 -p1
 
