@@ -1,13 +1,12 @@
-%define		_rc	rc1
 Summary:	Tools and library to control and monitor control groups
 Summary(pl.UTF-8):	Narzędzia i biblioteka do kontrolowania i monitorowania grup kontroli
 Name:		libcgroup
 Version:	0.38
-Release:	0.%{_rc}.2
+Release:	1
 License:	LGPL v2+
 Group:		Libraries
-Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.%{_rc}.tar.bz2
-# Source0-md5:	6c2100af9840f54f8bf97836887a4517
+Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.tar.bz2
+# Source0-md5:	f0f7d4060bf36ccc19d75dbf4f1695db
 Source1:	cgconfig.init
 Source2:	cgred.init
 Source3:	cgconfig.service
@@ -29,9 +28,10 @@ Requires(post,preun):	/sbin/chkconfig
 Requires(postun):	/usr/sbin/groupdel
 Requires(pre):	/usr/bin/getgid
 Requires(pre):	/usr/sbin/groupadd
+Requires(post,preun,postun):	systemd-units >= 38
 Requires:	procps
 Requires:	rc-scripts
-Requires:	systemd-units >= 37-0.10
+Requires:	systemd-units >= 38
 Provides:	group(cgred)
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
