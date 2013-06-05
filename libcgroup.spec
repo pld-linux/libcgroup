@@ -1,12 +1,13 @@
+%define	rcver	rc1
 Summary:	Tools and library to control and monitor control groups
 Summary(pl.UTF-8):	Narzędzia i biblioteka do kontrolowania i monitorowania grup kontroli
 Name:		libcgroup
-Version:	0.38
-Release:	1
+Version:	0.40
+Release:	0.%{rcver}.1
 License:	LGPL v2+
 Group:		Libraries
-Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.tar.bz2
-# Source0-md5:	f0f7d4060bf36ccc19d75dbf4f1695db
+Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.%{rcver}.tar.bz2
+# Source0-md5:	979624adc559f534b34099f4dba7576d
 Source1:	cgconfig.init
 Source2:	cgred.init
 Source3:	cgconfig.service
@@ -79,7 +80,7 @@ PAM module for libcgroup.
 Moduł PAM dla libcgroup.
 
 %prep
-%setup -q
+%setup -q -n %{name}-%{version}.%{rcver}
 %patch0 -p1
 %patch1 -p1
 
