@@ -3,7 +3,7 @@ Summary:	Tools and library to control and monitor control groups
 Summary(pl.UTF-8):	Narzędzia i biblioteka do kontrolowania i monitorowania grup kontroli
 Name:		libcgroup
 Version:	0.40
-Release:	0.%{rcver}.1
+Release:	0.%{rcver}.2
 License:	LGPL v2+
 Group:		Libraries
 Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.%{rcver}.tar.bz2
