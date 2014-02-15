@@ -26,7 +26,6 @@ BuildRequires:	pam-devel
 BuildRequires:	python-devel >= 2
 BuildRequires:	rpmbuild(macros) >= 1.626
 BuildRequires:	swig-python
-Requires(post):	/sbin/ldconfig
 Requires(post,preun):	/sbin/chkconfig
 Requires(postun):	/usr/sbin/groupdel
 Requires(pre):	/usr/bin/getgid
@@ -158,7 +157,6 @@ rm -rf $RPM_BUILD_ROOT
 %groupadd -g 261 -r -f cgred
 
 %post
-/sbin/ldconfig
 /sbin/chkconfig --add cgred
 /sbin/chkconfig --add cgconfig
 if [ ! -f /var/lock/subsys/cgconfig ]; then
@@ -182,7 +180,6 @@ fi
 %systemd_preun cgred.service
 
 %postun
-/sbin/ldconfig
 if [ "$1" = "0" ]; then
 	%groupremove cgred
 fi
