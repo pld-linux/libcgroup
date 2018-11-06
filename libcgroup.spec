@@ -2,7 +2,7 @@ Summary:	Tools and library to control and monitor control groups
 Summary(pl.UTF-8):	Narzędzia i biblioteka do kontrolowania i monitorowania grup kontroli
 Name:		libcgroup
 Version:	0.41
-Release:	4
+Release:	5
 License:	LGPL v2+
 Group:		Applications/System
 Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.tar.bz2
@@ -15,6 +15,21 @@ Source5:	cgred.sysconfig
 Patch0:		%{name}-pam.patch
 Patch1:		%{name}-conf.patch
 Patch2:		%{name}-missing.patch
+Patch3:		%{name}-0.37-chmod.patch
+Patch4:		%{name}-0.40.rc1-coverity.patch
+Patch5:		%{name}-0.40.rc1-fread.patch
+Patch6:		%{name}-0.40.rc1-templates-fix.patch
+Patch7:		%{name}-0.41-api.c-fix-order-of-memory-subsystem-parameters.patch
+Patch8:		%{name}-0.41-api.c-preserve-dirty-flag.patch
+Patch9:		%{name}-0.41-api.c-support-for-setting-multiline-values-in-contro.patch
+Patch10:	%{name}-0.41-change-cgroup-of-threads.patch
+Patch11:	%{name}-0.41-CVE-2018-14348.patch
+Patch12:	%{name}-0.41-fix-infinite-loop.patch
+Patch13:	%{name}-0.41-fix-log-level.patch
+Patch14:	%{name}-0.41-lex.patch
+Patch15:	%{name}-0.41-prevent-buffer-overflow.patch
+Patch16:	%{name}-0.41-size-of-controller-values.patch
+Patch17:	%{name}-0.41-tasks-file-warning.patch
 URL:		http://libcg.sourceforge.net/
 BuildRequires:	autoconf >= 2.61
 BuildRequires:	automake
@@ -110,6 +125,21 @@ Wiązania Pythona do biblioteki libcgroup.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
+%patch4 -p1
+%patch5 -p1
+%patch6 -p1
+%patch7 -p1
+%patch8 -p1
+%patch9 -p1
+%patch10 -p1
+%patch11 -p1
+%patch12 -p1
+%patch13 -p1
+%patch14 -p2
+%patch15 -p1
+%patch16 -p1
+%patch17 -p1
 
 %build
 %{__libtoolize}
@@ -133,13 +163,13 @@ install -d $RPM_BUILD_ROOT{/etc/sysconfig,%{systemdunitdir}}
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
-install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/cgconfig
-install %{SOURCE2} $RPM_BUILD_ROOT/etc/rc.d/init.d/cgred
+cp -p %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/cgconfig
+cp -p %{SOURCE2} $RPM_BUILD_ROOT/etc/rc.d/init.d/cgred
 
-install %{SOURCE3} $RPM_BUILD_ROOT%{systemdunitdir}/cgconfig.service
-install %{SOURCE4} $RPM_BUILD_ROOT%{systemdunitdir}/cgred.service
+cp -p %{SOURCE3} $RPM_BUILD_ROOT%{systemdunitdir}/cgconfig.service
+cp -p %{SOURCE4} $RPM_BUILD_ROOT%{systemdunitdir}/cgred.service
 
-install %{SOURCE5} $RPM_BUILD_ROOT/etc/sysconfig/cgred
+cp -p %{SOURCE5} $RPM_BUILD_ROOT/etc/sysconfig/cgred
 cp -a samples/cg{config,rules,snapshot_blacklist}.conf $RPM_BUILD_ROOT%{_sysconfdir}
 
 mv $RPM_BUILD_ROOT%{_libdir}/libcgroup.so.* $RPM_BUILD_ROOT/%{_lib}
