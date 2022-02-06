@@ -1,12 +1,13 @@
 Summary:	Tools and library to control and monitor control groups
 Summary(pl.UTF-8):	Narzędzia i biblioteka do kontrolowania i monitorowania grup kontroli
 Name:		libcgroup
-Version:	0.41
-Release:	5
+Version:	0.42.2
+Release:	1
 License:	LGPL v2+
 Group:		Applications/System
-Source0:	http://downloads.sourceforge.net/libcg/%{name}-%{version}.tar.bz2
-# Source0-md5:	3dea9d50b8a5b73ff0bf1cdcb210f63f
+#Source0Download: https://github.com/libcgroup/libcgroup/releases
+Source0:	https://github.com/libcgroup/libcgroup/releases/download/v%{version}/%{name}-%{version}.tar.bz2
+# Source0-md5:	8311f5ea60c99756533fea40ee2e8a85
 Source1:	cgconfig.init
 Source2:	cgred.init
 Source3:	cgconfig.service
@@ -19,24 +20,14 @@ Patch3:		%{name}-0.37-chmod.patch
 Patch4:		%{name}-0.40.rc1-coverity.patch
 Patch5:		%{name}-0.40.rc1-fread.patch
 Patch6:		%{name}-0.40.rc1-templates-fix.patch
-Patch7:		%{name}-0.41-api.c-fix-order-of-memory-subsystem-parameters.patch
-Patch8:		%{name}-0.41-api.c-preserve-dirty-flag.patch
-Patch9:		%{name}-0.41-api.c-support-for-setting-multiline-values-in-contro.patch
-Patch10:	%{name}-0.41-change-cgroup-of-threads.patch
-Patch11:	%{name}-0.41-CVE-2018-14348.patch
-Patch12:	%{name}-0.41-fix-infinite-loop.patch
-Patch13:	%{name}-0.41-fix-log-level.patch
-Patch14:	%{name}-0.41-lex.patch
-Patch15:	%{name}-0.41-prevent-buffer-overflow.patch
-Patch16:	%{name}-0.41-size-of-controller-values.patch
-Patch17:	%{name}-0.41-tasks-file-warning.patch
+Patch7:		%{name}-0.41-change-cgroup-of-threads.patch
 URL:		http://libcg.sourceforge.net/
-BuildRequires:	autoconf >= 2.61
+BuildRequires:	autoconf >= 2.69
 BuildRequires:	automake
 BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	libstdc++-devel
-BuildRequires:	libtool
+BuildRequires:	libtool >= 2:2
 BuildRequires:	pam-devel
 BuildRequires:	python-devel >= 2
 BuildRequires:	rpmbuild(macros) >= 1.626
@@ -130,16 +121,6 @@ Wiązania Pythona do biblioteki libcgroup.
 %patch5 -p1
 %patch6 -p1
 %patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
-%patch11 -p1
-%patch12 -p1
-%patch13 -p1
-%patch14 -p2
-%patch15 -p1
-%patch16 -p1
-%patch17 -p1
 
 %build
 %{__libtoolize}
@@ -149,6 +130,7 @@ Wiązania Pythona do biblioteki libcgroup.
 %{__automake}
 %configure \
 	--disable-silent-rules \
+	--disable-static \
 	--enable-bindings \
 	--enable-initscript-install \
 	--enable-opaque-hierarchy="name=systemd" \
@@ -172,8 +154,10 @@ cp -p %{SOURCE4} $RPM_BUILD_ROOT%{systemdunitdir}/cgred.service
 cp -p %{SOURCE5} $RPM_BUILD_ROOT/etc/sysconfig/cgred
 cp -a samples/cg{config,rules,snapshot_blacklist}.conf $RPM_BUILD_ROOT%{_sysconfdir}
 
-mv $RPM_BUILD_ROOT%{_libdir}/libcgroup.so.* $RPM_BUILD_ROOT/%{_lib}
+%{__mv} $RPM_BUILD_ROOT%{_libdir}/libcgroup.so.* $RPM_BUILD_ROOT/%{_lib}
 ln -snf ../../%{_lib}/$(basename $RPM_BUILD_ROOT/%{_lib}/libcgroup.so.*.*.*) $RPM_BUILD_ROOT%{_libdir}/libcgroup.so
+
+%{__rm} $RPM_BUILD_ROOT%{_libdir}/libcgroupfortesting.*
 
 install -d $RPM_BUILD_ROOT%{py_sitedir}
 %{__mv} $RPM_BUILD_ROOT%{_libdir}/_libcgroup.so $RPM_BUILD_ROOT%{py_sitedir}

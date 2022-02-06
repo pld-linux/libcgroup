@@ -1,7 +1,8 @@
-diff -up libcgroup-0.41/src/api.c.fread libcgroup-0.41/src/api.c
---- libcgroup-0.41/src/api.c.fread	2014-01-13 21:01:32.067067615 +0100
-+++ libcgroup-0.41/src/api.c	2014-01-13 21:01:32.070067594 +0100
-@@ -2232,29 +2232,29 @@ static int cg_rd_ctrl_file(const char *s
+diff --git a/src/api.c b/src/api.c
+index 54a6736..1557393 100644
+--- a/src/api.c
++++ b/src/api.c
+@@ -2482,29 +2482,29 @@ static int cg_rd_ctrl_file(const char *subsys, const char *cgroup,
  					const char *file, char **value)
  {
  	char path[FILENAME_MAX];
@@ -20,7 +21,7 @@ diff -up libcgroup-0.41/src/api.c.fread libcgroup-0.41/src/api.c
 +	if (ctrl_file < 0)
  		return ECGROUPVALUENOTEXIST;
  
- 	*value = calloc(CG_VALUE_MAX, 1);
+ 	*value = calloc(CG_CONTROL_VALUE_MAX, 1);
  	if (!*value) {
 -		fclose(ctrl_file);
 +		close(ctrl_file);
@@ -33,12 +34,12 @@ diff -up libcgroup-0.41/src/api.c.fread libcgroup-0.41/src/api.c
 +	 * using %as or fread crashes when we try to read from files like
  	 * memory.stat
  	 */
--	ret = fread(*value, 1, CG_VALUE_MAX-1, ctrl_file);
-+	ret = read(ctrl_file, *value, CG_VALUE_MAX-1);
+-	ret = fread(*value, 1, CG_CONTROL_VALUE_MAX-1, ctrl_file);
++	ret = read(ctrl_file, *value, CG_CONTROL_VALUE_MAX-1);
  	if (ret < 0) {
  		free(*value);
  		*value = NULL;
-@@ -2264,7 +2264,7 @@ static int cg_rd_ctrl_file(const char *s
+@@ -2514,7 +2514,7 @@ static int cg_rd_ctrl_file(const char *subsys, const char *cgroup,
  			(*value)[ret-1] = '\0';
  	}
  

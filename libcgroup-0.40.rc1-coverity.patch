@@ -1,18 +1,8 @@
-diff -up libcgroup-0.41/src/api.c.coverity libcgroup-0.41/src/api.c
---- libcgroup-0.41/src/api.c.coverity	2014-01-13 20:52:49.853838149 +0100
-+++ libcgroup-0.41/src/api.c	2014-01-13 20:52:49.854838142 +0100
-@@ -2791,7 +2791,6 @@ static int cgroup_create_template_group(
- 	if (group_name == NULL) {
- 		ret = ECGOTHER;
- 		last_errno = errno;
--		free(template_name);
- 		goto end;
- 	}
- 
-diff -up libcgroup-0.41/src/config.c.coverity libcgroup-0.41/src/config.c
---- libcgroup-0.41/src/config.c.coverity	2014-01-13 15:05:56.000000000 +0100
-+++ libcgroup-0.41/src/config.c	2014-01-13 20:52:49.854838142 +0100
-@@ -323,7 +323,7 @@ int config_group_task_perm(char *perm_ty
+diff --git a/src/config.c b/src/config.c
+index 3ffa263..b5d51b3 100644
+--- a/src/config.c
++++ b/src/config.c
+@@ -326,7 +326,7 @@ int config_group_task_perm(char *perm_type, char *value, int flag)
  	long val = atoi(value);
  	char buffer[CGROUP_BUFFER_LEN];
  	struct cgroup *config_cgroup;
@@ -21,7 +11,7 @@ diff -up libcgroup-0.41/src/config.c.coverity libcgroup-0.41/src/config.c
  
  	switch (flag) {
  	case CGROUP:
-@@ -367,10 +367,10 @@ int config_group_task_perm(char *perm_ty
+@@ -370,10 +370,10 @@ int config_group_task_perm(char *perm_type, char *value, int flag)
  			if (!group)
  				goto group_task_error;
  
@@ -34,7 +24,7 @@ diff -up libcgroup-0.41/src/config.c.coverity libcgroup-0.41/src/config.c
  				free(group);
  				goto group_task_error;
  			}
-@@ -436,7 +436,7 @@ int config_group_admin_perm(char *perm_t
+@@ -439,7 +439,7 @@ int config_group_admin_perm(char *perm_type, char *value, int flag)
  	struct cgroup *config_cgroup;
  	long val = atoi(value);
  	char buffer[CGROUP_BUFFER_LEN];
@@ -43,7 +33,7 @@ diff -up libcgroup-0.41/src/config.c.coverity libcgroup-0.41/src/config.c
  
  	switch (flag) {
  	case CGROUP:
-@@ -479,10 +479,10 @@ int config_group_admin_perm(char *perm_t
+@@ -482,10 +482,10 @@ int config_group_admin_perm(char *perm_type, char *value, int flag)
  			if (!group)
  				goto admin_error;
  
@@ -56,10 +46,11 @@ diff -up libcgroup-0.41/src/config.c.coverity libcgroup-0.41/src/config.c
  				free(group);
  				goto admin_error;
  			}
-diff -up libcgroup-0.41/src/daemon/cgrulesengd.c.coverity libcgroup-0.41/src/daemon/cgrulesengd.c
---- libcgroup-0.41/src/daemon/cgrulesengd.c.coverity	2014-01-13 15:05:56.000000000 +0100
-+++ libcgroup-0.41/src/daemon/cgrulesengd.c	2014-01-13 20:52:49.854838142 +0100
-@@ -646,7 +646,7 @@ close:
+diff --git a/src/daemon/cgrulesengd.c b/src/daemon/cgrulesengd.c
+index 4cef53e..90920d1 100644
+--- a/src/daemon/cgrulesengd.c
++++ b/src/daemon/cgrulesengd.c
+@@ -654,7 +654,7 @@ close:
  
  static int cgre_create_netlink_socket_process_msg(void)
  {
@@ -68,22 +59,11 @@ diff -up libcgroup-0.41/src/daemon/cgrulesengd.c.coverity libcgroup-0.41/src/dae
  	struct sockaddr_nl my_nla;
  	char buff[BUFF_SIZE];
  	int rc = -1;
-@@ -784,9 +784,9 @@ static int cgre_create_netlink_socket_pr
- 	}
- 
- close_and_exit:
--	if (sk_nl > 0)
-+	if (sk_nl > -1)
- 		close(sk_nl);
--	if (sk_unix > 0)
-+	if (sk_unix > -1)
- 		close(sk_unix);
- 	return rc;
- }
-diff -upr libcgroup-0.40.rc1.orig/src/tools/lscgroup.c libcgroup-0.40.rc1/src/tools/lscgroup.c
---- libcgroup-0.40.rc1.orig/src/tools/lscgroup.c	2013-05-21 15:36:04.000000000 +0200
-+++ libcgroup-0.40.rc1/src/tools/lscgroup.c	2013-11-04 14:26:53.400473523 +0100
-@@ -97,11 +97,11 @@ static int display_controller_data(char
+diff --git a/src/tools/lscgroup.c b/src/tools/lscgroup.c
+index bfb1724..d15a0c2 100644
+--- a/src/tools/lscgroup.c
++++ b/src/tools/lscgroup.c
+@@ -96,11 +96,11 @@ static int display_controller_data(char *input_path, char *controller, char *nam
  	if (ret != 0)
  		return ret;
  
