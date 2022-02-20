@@ -129,6 +129,8 @@ Wiązania Pythona do biblioteki libcgroup.
 %{__autoheader}
 %{__automake}
 %configure \
+	--bindir=/bin \
+	--sbindir=/sbin \
 	--disable-silent-rules \
 	--disable-static \
 	--enable-bindings \
