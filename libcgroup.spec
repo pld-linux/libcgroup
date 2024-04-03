@@ -1,3 +1,5 @@
+%bcond_without	python	# python bindings
+
 Summary:	Tools and library to control and monitor control groups
 Summary(pl.UTF-8):	Narzędzia i biblioteka do kontrolowania i monitorowania grup kontroli
 Name:		libcgroup
@@ -29,7 +31,7 @@ BuildRequires:	flex
 BuildRequires:	libstdc++-devel
 BuildRequires:	libtool >= 2:2
 BuildRequires:	pam-devel
-BuildRequires:	python-devel >= 2
+%{?with_python:BuildRequires:	python-devel >= 2}
 BuildRequires:	rpmbuild(macros) >= 1.626
 BuildRequires:	swig-python
 Requires(post,preun):	/sbin/chkconfig
@@ -133,7 +135,7 @@ Wiązania Pythona do biblioteki libcgroup.
 	--sbindir=/sbin \
 	--disable-silent-rules \
 	--disable-static \
-	--enable-bindings \
+	%{?with_python:--enable-bindings} \
 	--enable-initscript-install \
 	--enable-opaque-hierarchy="name=systemd" \
 	--enable-pam-module-dir=/%{_lib}/security
@@ -161,8 +163,10 @@ ln -snf ../../%{_lib}/$(basename $RPM_BUILD_ROOT/%{_lib}/libcgroup.so.*.*.*) $RP
 
 %{__rm} $RPM_BUILD_ROOT%{_libdir}/libcgroupfortesting.*
 
+%if %{with python}
 install -d $RPM_BUILD_ROOT%{py_sitedir}
 %{__mv} $RPM_BUILD_ROOT%{_libdir}/_libcgroup.so $RPM_BUILD_ROOT%{py_sitedir}
+%endif
 %{__rm} $RPM_BUILD_ROOT/%{_lib}/security/pam_cgroup.la
 %{__rm} $RPM_BUILD_ROOT%{_libdir}/*.la
 
@@ -270,6 +274,8 @@ fi
 %{_includedir}/libcgroup.h
 %{_pkgconfigdir}/libcgroup.pc
 
+%if %{with python}
 %files -n python-libcgroup
 %defattr(644,root,root,755)
 %attr(755,root,root) %{py_sitedir}/_libcgroup.so
+%endif
