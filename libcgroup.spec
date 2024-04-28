@@ -4,7 +4,7 @@ Summary:	Tools and library to control and monitor control groups
 Summary(pl.UTF-8):	Narzędzia i biblioteka do kontrolowania i monitorowania grup kontroli
 Name:		libcgroup
 Version:	0.42.2
-Release:	1
+Release:	2
 License:	LGPL v2+
 Group:		Applications/System
 #Source0Download: https://github.com/libcgroup/libcgroup/releases
@@ -144,7 +144,7 @@ Wiązania Pythona do biblioteki libcgroup.
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{/etc/sysconfig,%{systemdunitdir}}
+install -d $RPM_BUILD_ROOT{/etc/{cgconfig.d,sysconfig},%{systemdunitdir}}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
@@ -237,6 +237,7 @@ fi
 %doc README README_daemon
 %attr(754,root,root) /etc/rc.d/init.d/cgconfig
 %attr(754,root,root) /etc/rc.d/init.d/cgred
+%dir /etc/cgconfig.d
 %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/cgred
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/cg*.conf
 %{systemdunitdir}/cgconfig.service
